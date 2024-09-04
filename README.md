@@ -5,6 +5,7 @@ Code of the paper "UNSURE: Unknown Noise level Stein's Unbiased Risk Estimator" 
 
 We use the [deepinv library](https://deepinv.github.io/deepinv/) for most of the code.
 
+Paper available at [arXiv](https://arxiv.org/abs/2409.01985).
 
 # Method Description
 UNSURE is a self-supervised learning loss that can be used for learning a reconstruction network $f$ 
@@ -20,11 +21,13 @@ Unlike Stein's Unbiased Risk Estimator (SURE), the proposed loss can be used wit
 The loss is defined as
 
 $$
-\max_{\eta} \min_{f} \sum_{i=1}^N \|y_i - f(y_i)\|^2 + 2\Sigma_{\eta} \text{div} f(y_i) 
+\max_{\eta} \min_{f} \sum_{i=1}^N ||y_i - f(y_i)||^2 + 2\Sigma_{\eta} \text{div} f(y_i) 
 $$
 
 where $\eta$ is a Lagrange multiplier, 
 $\Sigma_{\eta}$ is the covariance matrix of the noise and $\text{div} f(y)$ is the divergence of the network $f$ at the point $y$.
+There exist multiple variants for different types of noise (e.g. Gaussian, Poisson-Gaussian, spatially correlated noise, etc.). 
+Please refer to the paper for more details.
 
 # Getting Started
 1. Clone the repository
@@ -37,5 +40,13 @@ pip install git+https://github.com/deepinv/deepinv.git#egg=deepinv
 
 # Citation
 ```
-TODO
+@misc{tachella2024unsureunknownnoiselevel,
+      title={UNSURE: Unknown Noise level Stein's Unbiased Risk Estimator}, 
+      author={Julián Tachella and Mike Davies and Laurent Jacques},
+      year={2024},
+      eprint={2409.01985},
+      archivePrefix={arXiv},
+      primaryClass={stat.ML},
+      url={https://arxiv.org/abs/2409.01985}, 
+}
 ```
