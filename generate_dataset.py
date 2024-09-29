@@ -2,7 +2,18 @@ import deepinv as dinv
 from helper_fn import get_problem
 
 
-problem = 'MNIST_denoising'
+
+problem = 'MNIST_denoising1'
+
+# OPTIONS are
+# 'MNIST_denoising1' for sigma=0.1
+# 'MNIST_denoising2' for sigma=0.2
+# 'MNIST_denoising3' for sigma=0.3
+# 'MNIST_denoising4' for sigma=0.4
+# 'MNIST_denoising5' for sigma=0.5
+# 'MRI' for MRI reconstruction with sigma=0.03
+#  'CorrelatedNoise_DIV2K' for Div2k denoising with spatially correlated noise with sigma=0.2
+
 
 _, physics, data_train, data_test, batch_size, device, path = get_problem(problem, generate_dataset=True)
 

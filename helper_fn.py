@@ -8,7 +8,7 @@ import os
 from PIL import Image
 from torch.utils.data import Dataset
 from models import UNet
-from unsure import UNSURE
+from unsure import UNSURE, ScoreLoss
 
 
 def get_unrolled(channels, norm, device, algo='PGD', scales=3, weight_tied=True, iter=3):
@@ -30,29 +30,7 @@ def get_unrolled(channels, norm, device, algo='PGD', scales=3, weight_tied=True,
 
 def get_problem(problem, generate_dataset=False):
     device = dinv.utils.get_freer_gpu()
-    if problem == 'Tomography':
-        pix = 128
-        sigma = .0005
-        batch_size = 8
-        physics = dinv.physics.Tomography(angles=pix, img_width=pix, normalize=True, parallel_computation=True,
-                                          device=device)
-        physics.noise_model = dinv.physics.PoissonGaussianNoise(sigma=sigma, gain=sigma)
-        path = './Tomography/'
-
-        transform = transforms.Compose([transforms.Resize(pix)])
-        if generate_dataset:
-            p = "./Tomography/"
-            data_train = dinv.datasets.HDF5Dataset(p + 'dinv_dataset0.h5', train=True, transform=transform)
-            data_test = dinv.datasets.HDF5Dataset(p + 'dinv_dataset0.h5', train=False, transform=transform)
-        else:
-            data_train = [dinv.datasets.HDF5Dataset(path + 'dinv_dataset0.h5', train=True)]
-            data_test = [dinv.datasets.HDF5Dataset(path + 'dinv_dataset0.h5', train=False)]
-
-        norm = physics.compute_norm(torch.ones(1, 1, pix, pix, device=device))
-
-        channels = 1
-        model = get_unrolled(channels, norm, device, algo='PGD', scales=2, iter=4, weight_tied=False)
-    elif problem == 'MRI':
+    if problem == 'MRI':
 
         batch_size = 8
         sigma = .03
@@ -81,6 +59,7 @@ def get_problem(problem, generate_dataset=False):
         model = get_unrolled(channels, norm, device, algo='HQS', scales=2, iter=7, weight_tied=False)
 
     elif problem.startswith('MNIST_denoising'):
+        print(problem)
         index = int(problem[-1])
         sigma = [.05, .1, .2, .3, .4, .5][index]
         batch_size = 256
@@ -101,27 +80,7 @@ def get_problem(problem, generate_dataset=False):
         model = UNet(in_channels=channels, out_channels=channels, scales=3, bias=False).to(device)
         model = dinv.models.ArtifactRemoval(model)
 
-    elif problem == 'Denoising_div2k':
-
-        sigma = .2
-        batch_size = 8
-        img_size = 128
-        path = './denoising/'
-
-        transform = transforms.Compose([transforms.ToTensor(), transforms.Resize((img_size, img_size))])
-
-        physics = dinv.physics.Denoising(noise_model=dinv.physics.GaussianNoise(sigma=sigma))
-        if generate_dataset:
-            data_train = dinv.datasets.DIV2K(root='./demosaicing/', mode='train', transform=transform, download=True)
-            data_test = dinv.datasets.DIV2K(root='./demosaicing/', mode='val', transform=transform)
-        else:
-            data_train = [dinv.datasets.HDF5Dataset(path=path+f'dinv_dataset0.h5', train=True)]
-            data_test = [dinv.datasets.HDF5Dataset(path=path+f'dinv_dataset0.h5', train=False)]
-
-        model = dinv.models.DRUNet()
-        model = dinv.models.ArtifactRemoval(model).to(device)
-
-    elif problem == 'DenoisingCorrelated_div2k':
+    elif problem == 'CorrelatedNoise_DIV2K':
         sigma = .2
         batch_size = 14
         img_size = 256
@@ -132,8 +91,8 @@ def get_problem(problem, generate_dataset=False):
         op = lambda x: dinv.physics.functional.conv2d(x, filter, padding='circular')
         physics = dinv.physics.Denoising(noise_model=CorrelatedGaussianNoise(sigma=sigma, linear_op=op))
         if generate_dataset:
-            data_train = dinv.datasets.DIV2K(root='./demosaicing/', mode='train', transform=transform, download=True)
-            data_test = dinv.datasets.DIV2K(root='./demosaicing/', mode='val', transform=transform)
+            data_train = dinv.datasets.DIV2K(root=path, mode='train', transform=transform, download=True)
+            data_test = dinv.datasets.DIV2K(root=path, mode='val', transform=transform)
         else:
             data_train = [dinv.datasets.HDF5Dataset(path=path+f'dinv_dataset0.h5', train=True)]
             data_test = [dinv.datasets.HDF5Dataset(path=path+f'dinv_dataset0.h5', train=False)]
@@ -141,38 +100,24 @@ def get_problem(problem, generate_dataset=False):
         channels = 3
         model = UNet(in_channels=channels, out_channels=channels, scales=4, bias=False).to(device)
         model = dinv.models.ArtifactRemoval(model)
-
-    elif problem == 'DenoisingPoissonGaussian_div2k':
-
-        sigma = .1
-        batch_size = 16
-        img_size = 128
-        path = './denoising_poisson_gaussian/'
-
-        transform = transforms.Compose([transforms.ToTensor(), transforms.Resize((img_size, img_size))])
-
-        physics = dinv.physics.Denoising(noise_model=dinv.physics.PoissonNoise(gain=sigma))
-        if generate_dataset:
-            data_train = dinv.datasets.DIV2K(root='./demosaicing/', mode='train', transform=transform, download=True)
-            data_test = dinv.datasets.DIV2K(root='./demosaicing/', mode='val', transform=transform)
-        else:
-            data_train = [dinv.datasets.HDF5Dataset(path=path+f'dinv_dataset0.h5', train=True)]
-            data_test = [dinv.datasets.HDF5Dataset(path=path+f'dinv_dataset0.h5', train=False)]
-
-        channels = 3
-        model = UNet(in_channels=channels, out_channels=channels, scales=5, bias=False).to(device)
-        model = dinv.models.ArtifactRemoval(model)
     else:
         raise ValueError('Problem not recognized')
 
     return model, physics, data_train, data_test, batch_size, device, path
 
 
-def get_losses(method, model, sigma, physics, problem=None, device='cuda'):
+def get_losses(method, model, physics, problem=None, device='cuda'):
+    if hasattr(physics.noise_model, 'sigma'):
+        sigma = physics.noise_model.sigma
+    elif hasattr(physics.noise_model, 'gain'):
+        sigma = physics.noise_model.gain
+    else:
+        sigma = 0.
+
     if method == 'unsure':
         losses = [UNSURE(device=device)]
     elif method == 'unsure_score':
-        losses = [dinv.loss.ScoreLoss()]
+        losses = [ScoreLoss()]
         model = losses[0].adapt_model(model)
     elif method == 'unsure_corr':
         losses = [UNSURE(kernel_size=3, device=device), dinv.loss.MCLoss()]
@@ -180,12 +125,10 @@ def get_losses(method, model, sigma, physics, problem=None, device='cuda'):
         s = 0.0005
         losses = [UNSURE(mode='poisson_gaussian', sigma_init=s, gain_init=s,
                                   step_size=s/100, device=device)]
-    elif method == 'mc':
-        losses = [dinv.loss.MCLoss()]
     elif method == 'sup':
         losses = [dinv.loss.SupLoss()]
     elif method.startswith('splitting'):
-        if problem == 'MRIs':
+        if problem == 'MRI':
             generator = dinv.physics.generator.RandomMaskGenerator(img_size=(2, 128, 128), center_fraction=0.01,
                                                                    acceleration=1.5, device=device)
         else:
@@ -210,9 +153,6 @@ def get_losses(method, model, sigma, physics, problem=None, device='cuda'):
         raise NotImplementedError
     if problem == 'MRI' and method != 'sup':
         losses.append(dinv.loss.EILoss(dinv.transform.Rotate()))
-    elif problem == 'Demosaicing_div2k':
-        if "noEI" not in method and method != 'sup':
-            losses.append(dinv.loss.EILoss(dinv.transform.Shift(), weight=.5))
 
     return model, losses
 
