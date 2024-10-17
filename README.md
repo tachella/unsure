@@ -3,7 +3,10 @@
 Code of the paper "UNSURE: Unknown Noise level Stein's Unbiased Risk Estimator" by [Julian Tachella](https://tachella.github.io/),
 [Mike Davies](https://www.eng.ed.ac.uk/about/people/professor-michael-e-davies) and [Laurent Jacques](https://laurentjacques.gitlab.io/).
 
-We use the [deepinv library](https://deepinv.github.io/deepinv/) for most of the code.
+We use the [deepinv library](https://deepinv.github.io/deepinv/) for most of the code. 
+
+
+The UNSURE loss was added to the deepinv library, please see [the documentation](https://deepinv.github.io/deepinv/auto_examples/self-supervised-learning/demo_unsure.html).
 
 Paper available at [arXiv](https://arxiv.org/abs/2409.01985).
 
