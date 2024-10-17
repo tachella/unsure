@@ -6,7 +6,7 @@ Code of the paper "UNSURE: Unknown Noise level Stein's Unbiased Risk Estimator" 
 We use the [deepinv library](https://deepinv.github.io/deepinv/) for most of the code. 
 
 
-The UNSURE loss was added to the deepinv library, please see [the documentation](https://deepinv.github.io/deepinv/auto_examples/self-supervised-learning/demo_unsure.html).
+The UNSURE loss was added to the deepinv library, please see [this jupyter notebook demo](https://deepinv.github.io/deepinv/auto_examples/self-supervised-learning/demo_unsure.html) and [the documentation](https://deepinv.github.io/deepinv/stubs/deepinv.loss.SureGaussianLoss.html#deepinv.loss.SureGaussianLoss).
 
 Paper available at [arXiv](https://arxiv.org/abs/2409.01985).
 
