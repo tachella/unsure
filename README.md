@@ -1,14 +1,13 @@
-# UNSURE: Unknown Noise level Stein's Unbiased Risk Estimator
+# UNSURE: self-supervised learning with Unknown Noise level and Stein's Unbiased Risk Estimate
 
-Code of the paper "UNSURE: Unknown Noise level Stein's Unbiased Risk Estimator" by [Julian Tachella](https://tachella.github.io/),
+Code of the **ICLR 2025** paper "UNSURE: Unknown Noise level Stein's Unbiased Risk Estimator" by [Julian Tachella](https://tachella.github.io/),
 [Mike Davies](https://www.eng.ed.ac.uk/about/people/professor-michael-e-davies) and [Laurent Jacques](https://laurentjacques.gitlab.io/).
 
 We use the [deepinv library](https://deepinv.github.io/deepinv/) for most of the code. 
 
-
 The UNSURE loss was added to the deepinv library, please see [this jupyter notebook demo](https://deepinv.github.io/deepinv/auto_examples/self-supervised-learning/demo_unsure.html) and [the documentation](https://deepinv.github.io/deepinv/api/stubs/deepinv.loss.SureGaussianLoss.html#deepinv.loss.SureGaussianLoss).
 
-Paper available at [arXiv](https://arxiv.org/abs/2409.01985).
+Paper available at [openreview](https://openreview.net/forum?id=ScVnYBaSEw).
 
 # Method Description
 UNSURE is a self-supervised learning loss that can be used for learning a reconstruction network $f$ 
@@ -43,13 +42,12 @@ pip install git+https://github.com/deepinv/deepinv.git#egg=deepinv
 
 # Citation
 ```
-@misc{tachella2024unsureunknownnoiselevel,
-      title={UNSURE: Unknown Noise level Stein's Unbiased Risk Estimator}, 
-      author={Julián Tachella and Mike Davies and Laurent Jacques},
-      year={2024},
-      eprint={2409.01985},
-      archivePrefix={arXiv},
-      primaryClass={stat.ML},
-      url={https://arxiv.org/abs/2409.01985}, 
+@inproceedings{
+tachella2025unsure,
+title={{UNSURE}: self-supervised learning with Unknown Noise level  and Stein's Unbiased Risk Estimate},
+author={Juli{\'a}n Tachella and Mike Davies and Laurent Jacques},
+booktitle={The Thirteenth International Conference on Learning Representations},
+year={2025},
+url={https://openreview.net/forum?id=ScVnYBaSEw}
 }
 ```
