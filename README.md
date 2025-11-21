@@ -1,4 +1,4 @@
-# UNSURE: self-supervised learning with Unknown Noise level and Stein's Unbiased Risk Estimate
+# UNSURE: self-supervised learning with Unknown Noise level and Stein's Unbiased Risk Estimate (ICLR'25)
 
 Code of the **ICLR 2025** paper "UNSURE: Unknown Noise level Stein's Unbiased Risk Estimator" by [Julian Tachella](https://tachella.github.io/),
 [Mike Davies](https://www.eng.ed.ac.uk/about/people/professor-michael-e-davies) and [Laurent Jacques](https://laurentjacques.gitlab.io/).
